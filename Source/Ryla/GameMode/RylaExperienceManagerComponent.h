@@ -41,6 +41,8 @@ public:
  */
 	void CallOrRegister_OnExperienceLoaded(FOnRylaExperienceLoaded::FDelegate&& Delegate);
 	
+	const URylaExperienceDefinition* GetCurrentExperienceChecked() const;
+	
 	UPROPERTY()
 	TObjectPtr<const URylaExperienceDefinition> CurrentExperience;
 

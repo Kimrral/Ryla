@@ -3,3 +3,6 @@
 
 #include "RylaPawnData.h"
 
+URylaPawnData::URylaPawnData(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
+{
+}

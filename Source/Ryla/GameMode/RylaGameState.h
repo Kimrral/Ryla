@@ -17,6 +17,6 @@ public:
 	ARylaGameState();
 
 	UPROPERTY()
-	TObjectPtr<URylaExperienceManagerComponent> ExperienceManagerComponent;
+	TObjectPtr<class URylaExperienceManagerComponent> ExperienceManagerComponent;
 	
 };

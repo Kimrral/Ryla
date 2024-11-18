@@ -3,9 +3,11 @@
 
 #include "RylaGameModeBase.h"
 
+#include "RylaExperienceDefinition.h"
 #include "RylaExperienceManagerComponent.h"
 #include "RylaGameState.h"
 #include "Ryla/Character/RylaCharacter.h"
+#include "Ryla/Character/RylaPawnData.h"
 #include "Ryla/Player/RylaPlayerController.h"
 #include "Ryla/Player/RylaPlayerState.h"
 
@@ -39,8 +41,78 @@ void ARylaGameModeBase::InitGameState()
 	ExperienceManagerComponent->CallOrRegister_OnExperienceLoaded(FOnRylaExperienceLoaded::FDelegate::CreateUObject(this, &ThisClass::OnExperienceLoaded));
 }
 
+UClass* ARylaGameModeBase::GetDefaultPawnClassForController_Implementation(AController* InController)
+{
+	// GetPawnDataForController를 활용하여, PawnData로부터 PawnClass를 유도하자
+	if (const URylaPawnData* PawnData = GetPawnDataForController(InController))
+	{
+		if (PawnData->PawnClass)
+		{
+			return PawnData->PawnClass;
+		}
+	}
+
+	return Super::GetDefaultPawnClassForController_Implementation(InController);
+}
+
+APawn* ARylaGameModeBase::SpawnDefaultPawnAtTransform_Implementation(AController* NewPlayer, const FTransform& SpawnTransform)
+{
+	return Super::SpawnDefaultPawnAtTransform_Implementation(NewPlayer, SpawnTransform);
+}
+
+void ARylaGameModeBase::HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer)
+{
+	if (IsExperienceLoaded())
+	{
+		Super::HandleStartingNewPlayer_Implementation(NewPlayer);
+	}
+}
+
+const URylaPawnData* ARylaGameModeBase::GetPawnDataForController(const AController* InController) const
+{
+	// 게임 도중에 PawnData가 오버라이드 되었을 경우, PawnData는 PlayerState에서 가져오게 됨
+	if (InController)
+	{
+		if (const ARylaPlayerState* HakPS = InController->GetPlayerState<ARylaPlayerState>())
+		{
+			// GetPawnData 구현
+			if (const URylaPawnData* PawnData = HakPS->GetPawnData<URylaPawnData>())
+			{
+				return PawnData;
+			}
+		}
+	}
+
+	// fall back to the default for the current experience
+	// 아직 PlayerState에 PawnData가 설정되어 있지 않은 경우, ExperienceManagerComponent의 CurrentExperience로부터 가져와서 설정
+	check(GameState);
+	const URylaExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<URylaExperienceManagerComponent>();
+	check(ExperienceManagerComponent);
+
+	if (ExperienceManagerComponent->IsExperienceLoaded())
+	{
+		// GetExperienceChecked 구현
+		if (const URylaExperienceDefinition* Experience = ExperienceManagerComponent->GetCurrentExperienceChecked(); Experience->DefaultPawnData)
+		{
+			return Experience->DefaultPawnData;
+		}
+	}
+
+	// 어떠한 케이스에도 핸들링 안되었으면 nullptr
+	return nullptr;
+}
+
 void ARylaGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
 {
+}
+
+bool ARylaGameModeBase::IsExperienceLoaded() const
+{
+	check(GameState);
+	const URylaExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<URylaExperienceManagerComponent>();
+	check(ExperienceManagerComponent);
+
+	return ExperienceManagerComponent->IsExperienceLoaded();
 }
 
 void ARylaGameModeBase::OnExperienceLoaded(const URylaExperienceDefinition* CurrentExperience)
@@ -48,11 +120,9 @@ void ARylaGameModeBase::OnExperienceLoaded(const URylaExperienceDefinition* Curr
 	// PlayerController를 순회하며
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		APlayerController* PC = Cast<APlayerController>(*Iterator);
-
 		// PlayerController가 Pawn을 Possess하지 않았다면, RestartPlayer를 통해 Pawn을 다시 Spawn한다
 		// - 한번 OnPossess를 보도록 하자:
-		if (PC && PC->GetPawn() == nullptr)
+		if (APlayerController* PC = Cast<APlayerController>(*Iterator); PC && PC->GetPawn() == nullptr)
 		{
 			if (PlayerCanRestart(PC))
 			{

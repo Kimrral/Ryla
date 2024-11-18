@@ -3,7 +3,7 @@
 
 #include "RylaExperienceManagerComponent.h"
 
-URylaExperienceManagerComponent::URylaExperienceManagerComponent(const FObjectInitializer& ObjectInitializer)
+URylaExperienceManagerComponent::URylaExperienceManagerComponent(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 }
 
@@ -26,4 +26,11 @@ void URylaExperienceManagerComponent::CallOrRegister_OnExperienceLoaded(FOnRylaE
 		 */
 		OnExperienceLoaded.Add(MoveTemp(Delegate));
 	}
+}
+
+const URylaExperienceDefinition* URylaExperienceManagerComponent::GetCurrentExperienceChecked() const
+{
+	check(LoadState == ERylaExperienceLoadState::Loaded);
+	check(CurrentExperience != nullptr);
+	return CurrentExperience;
 }
