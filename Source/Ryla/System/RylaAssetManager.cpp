@@ -40,15 +40,15 @@ UObject* URylaAssetManager::SynchronousLoadAsset(const FSoftObjectPath& AssetPat
 	if (AssetPath.IsValid())
 	{
 		// FScopeLogTIme 확인
-		TUniquePtr<FScopeLogTime> LogTimePtr;
 		if (ShouldLogAssetLoads())
 		{
 			// 동기 로딩이 얼마나 걸렸는지 초단위로 로깅 진행
-			LogTimePtr = MakeUnique<FScopeLogTime>(*FString::Printf(TEXT("Synchronous Loaded Assets [%s]"), *AssetPath.ToString()), nullptr, FScopeLogTime::ScopeLog_Seconds);
+			TUniquePtr<FScopeLogTime> LogTimePtr = MakeUnique<FScopeLogTime>(*FString::Printf(TEXT("Synchronous Loaded Assets [%s]"), *AssetPath.ToString()), nullptr, FScopeLogTime::ScopeLog_Seconds);
 		}
 
 		// 1.  AssetManager가 있으면, AssetManager의 StreamableManager를 통해 정적 로딩
 		// 2. 아니면, FSoftObjectPath를 통해 바로 정적 로딩
+		// ReSharper disable once CppDeprecatedEntity
 		if (UAssetManager::IsValid())
 		{
 			return UAssetManager::GetStreamableManager().LoadSynchronous(AssetPath);
@@ -73,8 +73,6 @@ void URylaAssetManager::AddLoadedAsset(const UObject* Asset)
 	}
 }
 
-PRAGMA_DISABLE_OPTIMIZATION
-
 void URylaAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
@@ -85,4 +83,3 @@ void URylaAssetManager::FinishInitialLoading()
 	Super::FinishInitialLoading();
 }
 
-PRAGMA_ENABLE_OPTIMIZATION

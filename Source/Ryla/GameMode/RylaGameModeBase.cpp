@@ -6,6 +6,7 @@
 #include "RylaExperienceDefinition.h"
 #include "RylaExperienceManagerComponent.h"
 #include "RylaGameState.h"
+#include "Kismet/GameplayStatics.h"
 #include "Ryla/Character/RylaCharacter.h"
 #include "Ryla/Character/RylaPawnData.h"
 #include "Ryla/Player/RylaPlayerController.h"
@@ -102,8 +103,46 @@ const URylaPawnData* ARylaGameModeBase::GetPawnDataForController(const AControll
 	return nullptr;
 }
 
-void ARylaGameModeBase::HandleMatchAssignmentIfNotExpectingOne()
+void ARylaGameModeBase::HandleMatchAssignmentIfNotExpectingOne() const
 {
+	// 해당 함수에서는 우리가 로딩할 Experience에 대해 PrimaryAssetId를 생성하여, OnMatchAssignmentGiven으로 넘겨준다
+
+	FPrimaryAssetId ExperienceId;
+
+	// precedence order (highest wins)
+	// - matchmaking assignment (if present)
+	// - default experience
+
+	UWorld* World = GetWorld();
+
+	// 우리가 앞서, URL과 함께 ExtraArgs로 넘겼던 정보는 OptionsString에 저정되어 있다.
+	if (!ExperienceId.IsValid() && UGameplayStatics::HasOption(OptionsString, TEXT("Experience")))
+	{
+		// Experience의 Value를 가져와서, PrimaryAssetId를 생성해준다: 이때, HakExperienceDefinition의 Class 이름을 사용한다
+		const FString ExperienceFromOptions = UGameplayStatics::ParseOption(OptionsString, TEXT("Experience"));
+		ExperienceId = FPrimaryAssetId(FPrimaryAssetType(URylaExperienceDefinition::StaticClass()->GetFName()), FName(*ExperienceFromOptions));
+	}
+
+	// fall back to the default experience
+	// 일단 기본 옵션으로 default하게 B_HakDefaultExperience로 설정놓자
+	if (!ExperienceId.IsValid())
+	{
+		ExperienceId = FPrimaryAssetId(FPrimaryAssetType("RylaExperienceDefinition"), FName("B_RylaDefaultExperience"));
+	}
+
+	// 필자가 이해한 HandleMatchAssignmentIfNotExpectingOne과 OnMatchAssignmentGiven()은 아직 직관적으로 이름이 와닫지 않는다고 생각한다
+	// - 후일, 어느정도 Lyra가 구현되면, 해당 함수의 명을 더 이해할 수 있을 것으로 예상한다
+	OnMatchAssignmentGiven(ExperienceId);
+}
+
+void ARylaGameModeBase::OnMatchAssignmentGiven(const FPrimaryAssetId& ExperienceId) const
+{
+	// 해당 함수는 ExperienceManagerComponent을 활용하여 Experience을 로딩하기 위해, ExperienceManagerComponent의 ServerSetCurrentExperience를 호출한다
+	check(ExperienceId.IsValid());
+
+	URylaExperienceManagerComponent* ExperienceManagerComponent = GameState->FindComponentByClass<URylaExperienceManagerComponent>();
+	check(ExperienceManagerComponent);
+	ExperienceManagerComponent->ServerSetCurrentExperience(ExperienceId);
 }
 
 bool ARylaGameModeBase::IsExperienceLoaded() const

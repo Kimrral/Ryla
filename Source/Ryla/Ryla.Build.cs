@@ -17,6 +17,7 @@ public class Ryla : ModuleRules
 			"GameplayTags",
 			// Game Features
 			"ModularGameplay",
+			"GameFeatures",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

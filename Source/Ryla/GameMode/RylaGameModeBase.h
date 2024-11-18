@@ -33,7 +33,8 @@ public:
 
 	const URylaPawnData* GetPawnDataForController(const AController* InController) const;
 
-	void HandleMatchAssignmentIfNotExpectingOne();
+	void HandleMatchAssignmentIfNotExpectingOne() const;
+	void OnMatchAssignmentGiven(const FPrimaryAssetId& ExperienceId) const;
 	bool IsExperienceLoaded()  const;
 	void OnExperienceLoaded(const URylaExperienceDefinition* CurrentExperience);
 	

@@ -40,7 +40,10 @@ public:
  * 아래의 OnExperienceLoaded에 바인딩하거나, 이미 Experience 로딩이 완료되었다면 바로 호출함
  */
 	void CallOrRegister_OnExperienceLoaded(FOnRylaExperienceLoaded::FDelegate&& Delegate);
-	
+	void StartExperienceLoad();
+	void OnExperienceLoadComplete();
+	void OnExperienceFullLoadCompleted();
+	void ServerSetCurrentExperience(const FPrimaryAssetId& ExperienceId);
 	const URylaExperienceDefinition* GetCurrentExperienceChecked() const;
 	
 	UPROPERTY()
