@@ -15,9 +15,24 @@ public class Ryla : ModuleRules
 			"InputCore",
 			// GAS
 			"GameplayTags",
+			"GameplayTasks",
+			"GameplayAbilities",
 			// Game Features
 			"ModularGameplay",
 			"GameFeatures",
+
+			// Input
+			"InputCore",
+			"EnhancedInput",
+
+
+			// CommonUI
+			"CommonUI",
+			// UMG
+			"UMG",
+			// Slate
+			"Slate",
+			"SlateCore",
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

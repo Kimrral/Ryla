@@ -1,5 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
@@ -7,16 +5,18 @@
 #include "RylaPawnData.generated.h"
 
 /**
- * 
+ * URylaPawnData
+ * - non-mutable data asset that contains properties used to define a pawn
  */
-UCLASS()
-class RYLA_API URylaPawnData : public UPrimaryDataAsset
+UCLASS(BlueprintType)
+class URylaPawnData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
-public:
-	URylaPawnData(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="RylaPawn")
+public:
+	URylaPawnData(const FObjectInitializer& ObjectInitializer);
+
+	/** Pawn의 Class */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Ryla|Pawn")
 	TSubclassOf<APawn> PawnClass;
-	
 };
