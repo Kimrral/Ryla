@@ -3,6 +3,7 @@
 
 #include "RylaAssetManager.h"
 
+#include "Ryla/RylaGameplayTags.h"
 #include "Ryla/RylaLogChannels.h"
 
 URylaAssetManager::URylaAssetManager()
@@ -76,6 +77,8 @@ void URylaAssetManager::AddLoadedAsset(const UObject* Asset)
 void URylaAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
+
+	FRylaGameplayTags::InitializeNativeTags();
 }
 
 void URylaAssetManager::FinishInitialLoading()
